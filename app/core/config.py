@@ -1,6 +1,7 @@
-from pydantic import BaseSettings, Field, validator
+from pydantic import Field, validator
+from pydantic_settings import BaseSettings
 from typing import Optional
-import secrets
+from pathlib import Path
 
 class Settings(BaseSettings):
     # SECRETS - aka sensitive data
@@ -41,7 +42,8 @@ class Settings(BaseSettings):
         return v
     
     class Config:
-        env_file = ".env"
+        app_dir = Path(__file__).resolve().parent.parent
+        env_file = str(app_dir.parent / ".env")
         env_file_encoding = "utf-8"
         case_sensitive = False
 
@@ -52,3 +54,8 @@ class Settings(BaseSettings):
         }
 
 from functools import lru_cache
+
+
+@lru_cache()
+def get_settings() -> Settings:
+    return Settings()
