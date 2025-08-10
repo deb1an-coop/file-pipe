@@ -1,9 +1,10 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings, Settings
+from app.api.api import router as api_router
 
 app = FastAPI()
-
+router = APIRouter()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -12,11 +13,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/")
+@router.get("/")
 async def read_root():
     return {"message": "Welcome to the FastAPI application!"}
 
-@app.get("/config")
+@router.get("/config")
 def get_config(settings: Settings = Depends(get_settings)):
     return {
         "environment": settings.environment,
@@ -26,7 +27,8 @@ def get_config(settings: Settings = Depends(get_settings)):
         "jwt_secret_set": bool(settings.jwt_secret_key),
     }
 
-
+app.include_router(router, prefix="/api")
+app.include_router(api_router, prefix="/api")
 if __name__ == "__main__":
     import uvicorn
     settings = get_settings()

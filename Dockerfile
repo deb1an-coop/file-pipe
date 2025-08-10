@@ -1,16 +1,18 @@
-FROM python:3.12-slim
+FROM python:3.13-slim
 
 RUN pip install poetry
 
-ENV POETRY_NO_INTERATION=1 \
-    POETRY_VENV_IN_PROJECT=1 \
-    POETRY_CACHE_DIR=/tmp/poetry_cache
+ENV POETRY_NO_INTERACTION=1
 
 WORKDIR /app
 
-COPY pyproject.toml poetry.lock ./
+COPY pyproject.toml ./
+COPY README.md /app/
 
-RUN poetry install --only=main --no-root && rm -rf ${POETRY_CACHE_DIR}
+# Configure poetry to create venv in project and install dependencies
+RUN poetry config virtualenvs.in-project true && \
+    poetry lock && \
+    poetry install --no-root
 
 COPY app ./app
 

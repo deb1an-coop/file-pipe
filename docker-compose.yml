@@ -1,21 +1,25 @@
-version: '3.8'
+version: "3.8"
 
 services:
   app:
     build: .
     ports:
       - "8000:8000"
-    environment:
-      - ENVIRONMENT=production
-      - DEBUG=false
-      - DATABASE_URL=postgresql://postgres:password@db:5432/fastapi_db
-      - REDIS_HOST=redis
+    env_file:
+      - .env
+    # environment:
+    #   - ENVIRONMENT=production
+    #   - DEBUG=false
+    #   - DATABASE_URL=postgresql://postgres:password@db:5432/fastapi_db
+    #   - REDIS_HOST=redis
     depends_on:
       - db
       - redis
 
   db:
     image: postgres:15
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_DB: fastapi_db
       POSTGRES_USER: postgres
@@ -25,7 +29,44 @@ services:
 
   redis:
     image: redis:7-alpine
-    command: redis-server --requirepass your-redis-password
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass myawesomepassword
+
+  celery:
+    build: .
+    depends_on:
+      - redis
+    environment:
+      - REDIS_URL=redis://:myawesomepassword@redis:6379/0
+      - CELERY_BROKER_URL=redis://:myawesomepassword@redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://:myawesomepassword@redis:6379/0
+    volumes:
+      - .:/app
+    command: poetry run celery -A app.celery_app worker --loglevel=info
+
+  celery-beat:
+    build: .
+    depends_on:
+      - redis
+    environment:
+      - REDIS_URL=redis://:myawesomepassword@redis:6379/0
+      - CELERY_BROKER_URL=redis://:myawesomepassword@redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://:myawesomepassword@redis:6379/0
+    volumes:
+      - .:/app
+    command: poetry run celery -A app.celery_app beat --loglevel=info
+
+  flower:
+    build: .
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
+    environment:
+      - REDIS_URL=redis://:myawesomepassword@redis:6379/0
+      - CELERY_BROKER_URL=redis://:myawesomepassword@redis:6379/0
+    command: poetry run python -m celery -A app.celery_app flower
 
 volumes:
   postgres_data:

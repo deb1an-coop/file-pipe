@@ -28,6 +28,13 @@ class Settings(BaseSettings):
     redis_host: str = Field("localhost", env="REDIS_HOST")
     redis_port: int = Field(6379, env="REDIS_PORT")
     redis_db: int = Field(0, env="REDIS_DB")
+    
+    @property
+    def redis_url(self) -> str:
+        """Construct the Redis URL for Celery broker and backend."""
+        if self.redis_password:
+            return f"redis://:{self.redis_password}@{self.redis_host}:{self.redis_port}/{self.redis_db}"
+        return f"redis://{self.redis_host}:{self.redis_port}/{self.redis_db}"
 
     @validator("jwt_secret_key")
     def validate_jwt_secrets(cls, v):
@@ -41,17 +48,11 @@ class Settings(BaseSettings):
             raise ValueError("Environment must be development, staging, or production.")
         return v
     
-    class Config:
-        app_dir = Path(__file__).resolve().parent.parent
-        env_file = str(app_dir.parent / ".env")
-        env_file_encoding = "utf-8"
-        case_sensitive = False
-
-        fields = {
-            "jwt_secret_key": {"repr": False},
-            "database_url": {"repr": False},
-            "redis_password": {"repr": False}
-        }
+    model_config = {
+        "env_file": ".env",
+        "env_file_encoding": "utf-8",
+        "case_sensitive": False
+    }
 
 from functools import lru_cache
 
