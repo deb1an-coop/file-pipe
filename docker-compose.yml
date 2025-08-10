@@ -42,9 +42,7 @@ services:
       - REDIS_URL=redis://:myawesomepassword@redis:6379/0
       - CELERY_BROKER_URL=redis://:myawesomepassword@redis:6379/0
       - CELERY_RESULT_BACKEND=redis://:myawesomepassword@redis:6379/0
-    volumes:
-      - .:/app
-    command: /app/.venv/bin/python -m celery -A app.celery_app worker --loglevel=info
+    command: python -m celery -A app.celery_app worker --loglevel=info
 
   celery-beat:
     build: .
@@ -56,9 +54,7 @@ services:
       - REDIS_URL=redis://:myawesomepassword@redis:6379/0
       - CELERY_BROKER_URL=redis://:myawesomepassword@redis:6379/0
       - CELERY_RESULT_BACKEND=redis://:myawesomepassword@redis:6379/0
-    volumes:
-      - .:/app
-    command: /app/.venv/bin/python -m celery -A app.celery_app beat --loglevel=info
+    command: python -m celery -A app.celery_app beat --loglevel=info
 
   flower:
     build: .
@@ -71,7 +67,7 @@ services:
     environment:
       - REDIS_URL=redis://:myawesomepassword@redis:6379/0
       - CELERY_BROKER_URL=redis://:myawesomepassword@redis:6379/0
-    command: /app/.venv/bin/python -m celery -A app.celery_app flower
+    command: python -m celery -A app.celery_app flower
 
 volumes:
   postgres_data:
