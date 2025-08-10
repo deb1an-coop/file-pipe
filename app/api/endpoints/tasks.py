@@ -88,7 +88,7 @@ async def create_task(
         task_id = None
         
         if request.task_type == TaskType.DATA_PROCESSING:
-            params = DataProcessingRequest(**request.parameters)
+            params = request.parameters
             task = process_data_task.delay(
                 params.data_size, 
                 params.processing_time, 
@@ -97,12 +97,12 @@ async def create_task(
             task_id = task.id
             
         elif request.task_type == TaskType.FILE_PROCESSING:
-            params = FileProcessingRequest(**request.parameters)
+            params = request.parameters
             task = process_file_task.delay(params.file_url, params.operation)
             task_id = task.id
             
         elif request.task_type == TaskType.EMAIL_SENDING:
-            params = EmailTaskRequest(**request.parameters)
+            params = request.parameters
             task = send_email_task.delay(
                 params.recipient, 
                 params.subject, 

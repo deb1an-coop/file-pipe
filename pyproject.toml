@@ -17,6 +17,7 @@ python-jose = "^3.5.0"
 celery = "^5.5.3"
 kombu = "^5.5.4"
 redis = "^5.0.0"
+flower = "^2.0.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.1"
