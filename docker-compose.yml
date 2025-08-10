@@ -7,11 +7,10 @@ services:
       - "8000:8000"
     env_file:
       - .env
-    # environment:
-    #   - ENVIRONMENT=production
-    #   - DEBUG=false
-    #   - DATABASE_URL=postgresql://postgres:password@db:5432/fastapi_db
-    #   - REDIS_HOST=redis
+    environment:
+      - REDIS_URL=redis://:myawesomepassword@redis:6379/0
+      - CELERY_BROKER_URL=redis://:myawesomepassword@redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://:myawesomepassword@redis:6379/0
     depends_on:
       - db
       - redis
@@ -37,25 +36,29 @@ services:
     build: .
     depends_on:
       - redis
+    env_file:
+      - .env
     environment:
       - REDIS_URL=redis://:myawesomepassword@redis:6379/0
       - CELERY_BROKER_URL=redis://:myawesomepassword@redis:6379/0
       - CELERY_RESULT_BACKEND=redis://:myawesomepassword@redis:6379/0
     volumes:
       - .:/app
-    command: poetry run celery -A app.celery_app worker --loglevel=info
+    command: /app/.venv/bin/python -m celery -A app.celery_app worker --loglevel=info
 
   celery-beat:
     build: .
     depends_on:
       - redis
+    env_file:
+      - .env
     environment:
       - REDIS_URL=redis://:myawesomepassword@redis:6379/0
       - CELERY_BROKER_URL=redis://:myawesomepassword@redis:6379/0
       - CELERY_RESULT_BACKEND=redis://:myawesomepassword@redis:6379/0
     volumes:
       - .:/app
-    command: poetry run celery -A app.celery_app beat --loglevel=info
+    command: /app/.venv/bin/python -m celery -A app.celery_app beat --loglevel=info
 
   flower:
     build: .
@@ -63,10 +66,12 @@ services:
       - "5555:5555"
     depends_on:
       - redis
+    env_file:
+      - .env
     environment:
       - REDIS_URL=redis://:myawesomepassword@redis:6379/0
       - CELERY_BROKER_URL=redis://:myawesomepassword@redis:6379/0
-    command: poetry run python -m celery -A app.celery_app flower
+    command: /app/.venv/bin/python -m celery -A app.celery_app flower
 
 volumes:
   postgres_data:

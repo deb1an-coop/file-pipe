@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from typing import Optional, Any, Dict
+from pydantic import BaseModel, Field
+from typing import Optional, Any, Dict, Union
 from enum import Enum
 from datetime import datetime
 
@@ -20,13 +20,6 @@ class TaskType(str, Enum):
     REPORT_GENERATION = "report_generation"
 
 
-class CreateTaskRequest(BaseModel):
-    task_type: TaskType
-    parameters: Dict[str, Any]
-    description: Optional[str] = None
-    priority: Optional[int] = None
-
-
 class DataProcessingRequest(BaseModel):
     data_size: int = 1000
     processing_time: float = 10.0 # seconds
@@ -44,6 +37,47 @@ class EmailTaskRequest(BaseModel):
     message: str
     delay_seconds: int = 0
 
+class ReportGenerationRequest(BaseModel):
+    report_type: str = "monthly"
+    format: str = "pdf"
+    data_range: str = "last_30_days"
+
+class CreateTaskRequest(BaseModel):
+    task_type: TaskType
+    parameters: Union[DataProcessingRequest, FileProcessingRequest, EmailTaskRequest, ReportGenerationRequest]
+    description: Optional[str] = None
+    priority: int = Field(default=0, ge=0, le=10)
+
+    class Config:
+        schema_extra = {
+            "examples": {
+                "data_processing": {
+                    "task_type": "DATA_PROCESSING",
+                    "parameters": {
+                        "data_size": 1000,
+                        "processing_time": 10,
+                        "include_error": False
+                    },
+                    "description": "Process 1000 data items",
+                    "priority": 1
+                },
+                "email_sending": {
+                    "task_type": "EMAIL_SENDING", 
+                    "parameters": {
+                        "recipient": "user@example.com",
+                        "subject": "Test Email",
+                        "message": "This is a test message",
+                        "delay_seconds": 0
+                    },
+                    "description": "Send notification email",
+                    "priority": 2
+                }
+            }
+        }
+
+
+
+
 
 class TaskResponse(BaseModel):
     task_id: str
@@ -55,7 +89,7 @@ class TaskResponse(BaseModel):
     completed_at: Optional[datetime] = None
     result: Optional[Dict[str, Any]] = None
     error: Optional[str] = None
-    progress: Optional[int] = 0  # Set default value instead of None
+    progress: Optional[int] = None
 
 
 class TaskListResponse(BaseModel):

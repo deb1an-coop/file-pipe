@@ -3,6 +3,7 @@ FROM python:3.13-slim
 RUN pip install poetry
 
 ENV POETRY_NO_INTERACTION=1
+ENV POETRY_VENV_IN_PROJECT=1
 
 WORKDIR /app
 
@@ -17,5 +18,8 @@ RUN poetry config virtualenvs.in-project true && \
 COPY app ./app
 
 RUN poetry install --only-root
+
+# Add the virtual environment to PATH
+ENV PATH="/app/.venv/bin:$PATH"
 
 CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
