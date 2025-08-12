@@ -3,6 +3,7 @@ from pydantic_settings import BaseSettings
 from typing import Optional
 from pathlib import Path
 
+
 class Settings(BaseSettings):
     # SECRETS - aka sensitive data
     jwt_secret_key: str = Field(..., env="JWT_SECRET_KEY")
@@ -28,7 +29,7 @@ class Settings(BaseSettings):
     redis_host: str = Field("localhost", env="REDIS_HOST")
     redis_port: int = Field(6379, env="REDIS_PORT")
     redis_db: int = Field(0, env="REDIS_DB")
-    
+
     @property
     def redis_url(self) -> str:
         """Construct the Redis URL for Celery broker and backend."""
@@ -41,18 +42,19 @@ class Settings(BaseSettings):
         if len(v) < 32:
             raise ValueError("JWT secret key must be at least 32 characters long")
         return v
-    
+
     @validator("environment")
     def validate_environment(cls, v):
         if v not in ["development", "staging", "production"]:
             raise ValueError("Environment must be development, staging, or production.")
         return v
-    
+
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",
-        "case_sensitive": False
+        "case_sensitive": False,
     }
+
 
 from functools import lru_cache
 

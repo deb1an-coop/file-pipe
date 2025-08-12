@@ -2,6 +2,10 @@ from fastapi import FastAPI, Depends, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings, Settings
 from app.api.api import router as api_router
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 router = APIRouter()
