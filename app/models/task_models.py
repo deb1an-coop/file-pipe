@@ -1,7 +1,8 @@
-from pydantic import BaseModel, Field
-from typing import Optional, Any, Dict, Union
-from enum import Enum
 from datetime import datetime
+from enum import Enum
+from typing import Any, Dict, Optional, Union
+
+from pydantic import BaseModel, Field
 
 
 class TaskStatus(str, Enum):
@@ -11,6 +12,7 @@ class TaskStatus(str, Enum):
     FAILED = "FAILED"
     RETRY = "RETRY"
     REVOKED = "REVOKED"
+    PROGRESS = "PROGRESS"
 
 
 class TaskType(str, Enum):
@@ -22,7 +24,7 @@ class TaskType(str, Enum):
 
 class DataProcessingRequest(BaseModel):
     data_size: int = 1000
-    processing_time: float = 10.0 # seconds
+    processing_time: float = 10.0  # seconds
     include_error: bool = False
 
 
@@ -37,14 +39,21 @@ class EmailTaskRequest(BaseModel):
     message: str
     delay_seconds: int = 0
 
+
 class ReportGenerationRequest(BaseModel):
     report_type: str = "monthly"
     format: str = "pdf"
     data_range: str = "last_30_days"
 
+
 class CreateTaskRequest(BaseModel):
     task_type: TaskType
-    parameters: Union[DataProcessingRequest, FileProcessingRequest, EmailTaskRequest, ReportGenerationRequest]
+    parameters: Union[
+        DataProcessingRequest,
+        FileProcessingRequest,
+        EmailTaskRequest,
+        ReportGenerationRequest,
+    ]
     description: Optional[str] = None
     priority: int = Field(default=0, ge=0, le=10)
 
@@ -56,27 +65,24 @@ class CreateTaskRequest(BaseModel):
                     "parameters": {
                         "data_size": 1000,
                         "processing_time": 10,
-                        "include_error": False
+                        "include_error": False,
                     },
                     "description": "Process 1000 data items",
-                    "priority": 1
+                    "priority": 1,
                 },
                 "email_sending": {
-                    "task_type": "EMAIL_SENDING", 
+                    "task_type": "EMAIL_SENDING",
                     "parameters": {
                         "recipient": "user@example.com",
                         "subject": "Test Email",
                         "message": "This is a test message",
-                        "delay_seconds": 0
+                        "delay_seconds": 0,
                     },
                     "description": "Send notification email",
-                    "priority": 2
-                }
+                    "priority": 2,
+                },
             }
         }
-
-
-
 
 
 class TaskResponse(BaseModel):
@@ -103,7 +109,7 @@ class TaskStatusResponse(BaseModel):
     task_id: str
     status: TaskStatus
     progress: Optional[int] = None
-    result: Optional[Dict[str, Any]] = None
+    result: Optional[str] = None
     error: Optional[str] = None
     created_at: datetime
     started_at: Optional[datetime] = None

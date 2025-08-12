@@ -22,4 +22,4 @@ RUN poetry install --only-root
 # Remove the PATH modification since we're not using project venv
 # ENV PATH="/app/.venv/bin:$PATH"
 
-CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "app"]
